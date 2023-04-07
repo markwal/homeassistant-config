@@ -1,0 +1,54 @@
+- id: '1680030941829'
+  alias: Aux heat on power outage
+  description: ''
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition:
+  - condition: state
+    entity_id: binary_sensor.generator_power_outage
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    state: 'on'
+  - condition: state
+    entity_id: climate.kitchen
+    state: heat
+  action:
+  - service: climate.set_aux_heat
+    data:
+      aux_heat: true
+  - service: notify.notify
+    data:
+      message: Set the Kitchen thermostat to Aux heat
+  mode: single
+- id: '1680033021496'
+  alias: Allow heat pump east if the power is on
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.allow_heat_pump_east
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+  condition:
+  - condition: state
+    entity_id: binary_sensor.generator_power_outage
+    state: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+  action:
+  - type: turn_on
+    device_id: f1eb06a0cd1de63a0a89d6f1a07c0c07
+    entity_id: switch.allow_heat_pump_east
+    domain: switch
+  - service: notify.mobile_app_pixel_6_pro
+    data:
+      message: 'Auto: turned allow heat pump east back on'
+  mode: single

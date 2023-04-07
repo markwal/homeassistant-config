@@ -1,0 +1,13 @@
+secrets.yaml
+*.log
+*.log.*
+*.db
+*.db-*
+.esphome
+.cloud
+.storage
+.HA_VERSION
+*.swp
+image
+tts
+www
