@@ -1,0 +1,60 @@
+esphome:
+  name: heat-pump-east
+
+esp32:
+  board: adafruit_feather_esp32_v2
+
+light:
+  - platform: neopixelbus
+    type: GRB
+    variant: WS2812X
+    pin: GPIO0
+    num_leds: 1
+    name: "On-board neopixel"
+    effects:
+      - random:
+
+switch:
+  - platform: gpio
+    pin: 5
+    name: "Allow Heat Pump East"
+    restore_mode: ALWAYS_OFF
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 13
+      inverted: true
+    name: "Heat Pump East Requested"
+
+i2c:
+  sda: 22
+  scl: 20
+  id: bus_a
+
+sensor:
+  - platform: mcp9808
+    name: "East Utility Temperature"
+    update_interval: 60s
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret heat_pump_east
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Outdoor-Thermostat"
+    password: !secret wifi_ap_password
+
+captive_portal:

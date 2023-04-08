@@ -1,0 +1,39 @@
+esphome:
+  name: outdoor-thermometer
+
+esp32:
+  board: adafruit_feather_esp32_v2
+
+i2c:
+  sda: 22
+  scl: 20
+  id: bus_a
+
+sensor:
+  - platform: sht3xd
+    temperature:
+      name: "Outdoor Temperature"
+    humidity:
+      name: "Outdoor Humidity"
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "5AaO2lqV/039QBGbvL5C+pt95mzrKGxyF+4OE1N1v7I="
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Outdoor-Thermostat"
+    password: !secret wifi_ap_password
+
+captive_portal:
