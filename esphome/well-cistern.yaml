@@ -61,7 +61,7 @@ sensor:
       name: "BME680 CO2 Equivalent"
     breath_voc_equivalent:
       name: "BME680 Breath VOC Equivalent"
-      
+
   - platform: custom
     lambda: |-
       auto depth_sensor = new I2cSonarSensor();
@@ -98,7 +98,7 @@ binary_sensor:
             id(sh1107).turn_on();
             id(auto_display_off).execute();
             return true;
-        
+
   - platform: gpio
     id: button_c
     internal: True
@@ -117,8 +117,8 @@ binary_sensor:
 
 switch:
   - platform: template
-    name: "Display On"
     id: display_on
+    internal: True
     restore_mode: ALWAYS_ON
     optimistic: True
     turn_on_action:
