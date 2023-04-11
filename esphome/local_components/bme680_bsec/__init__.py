@@ -53,7 +53,10 @@ CONFIG_SCHEMA = cv.All(
         cv.only_on_esp8266,
         cv.All(
             cv.only_on_esp32,
-            esp32.only_on_variant(supported=[esp32.const.VARIANT_ESP32]),
+            cv.Any(
+                esp32.only_on_variant(supported=[esp32.const.VARIANT_ESP32]),
+                esp32.only_on_variant(supported=[esp32.const.VARIANT_ESP32S2]),
+            )
         ),
     ),
 )
@@ -76,4 +79,4 @@ async def to_code(config):
     cg.add_library("SPI", None)
 
     cg.add_define("USE_BSEC")
-    cg.add_library("boschsensortec/BSEC Software Library", "1.6.1480")
+    cg.add_library(None, None, repository="https://github.com/markwal/BSEC-Arduino-library-esp32s2")

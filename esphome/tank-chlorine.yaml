@@ -7,6 +7,11 @@ esphome:
     - Wire
     - https://github.com/markwal/RCWL_1601_i2c.git
 
+external_components:
+  - source:
+      type: local
+      path: local_components
+
 esp32:
   board: adafruit_feather_esp32s2_tft
   framework:
@@ -183,7 +188,7 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Esphome-Well-Cistern"
+    ssid: "Esphome-Tank-Chlorine"
     password: !secret wifi_ap_password
 
 captive_portal:
