@@ -11,6 +11,7 @@ external_components:
   - source:
       type: local
       path: local_components
+    components: [ bme680_bsec ]
 
 esp32:
   board: adafruit_feather_esp32s2_tft
