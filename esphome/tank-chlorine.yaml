@@ -1,97 +1,29 @@
 esphome:
   name: "tank-chlorine"
   friendly_name: Chlorine Tank
-  includes:
-    - i2c_sonar.h
-  libraries:
-    - Wire
-    - https://github.com/markwal/RCWL_1601_i2c.git
-
-external_components:
-  - source:
-      type: local
-      path: local_components
-    components: [ bme680_bsec ]
 
 esp32:
   board: adafruit_feather_esp32s2_tft
   framework:
     type: arduino
 
-i2c:
-  scl: GPIO41
-  sda: GPIO42
-  id: bus_a
-  
-spi:
-  clk_pin: GPIO36
-  mosi_pin: GPIO35
-  miso_pin: GPIO37
+output:
+  - platform: gpio
+    pin: 7
+    inverted: True
+    id: tft_power
 
-bme680_bsec:
-  address: 0x77
-  sample_rate: ulp
+i2c:
+  sda: 3
+  scl: 4
+  scan: False
+  frequency: 100kHz
 
 sensor:
-  - platform: wifi_signal
-    name: "WiFi Signal Sensor"
-    id: wifi_signal_strength
-
-  - platform: bme680_bsec
+  - platform: bme680
+    address: 0x77
     temperature:
-      name: "BME680 Temperature"
-      id: temp
-    pressure:
-      name: "BME680 Pressure"
-      id: pres
-    humidity:
-      name: "BME680 Humidity"
-      id: humid
-    iaq:
-      name: "BME680 IAQ"
-      id: iaq
-    co2_equivalent:
-      name: "BME680 CO2 Equivalent"
-    breath_voc_equivalent:
-      name: "BME680 Breath VOC Equivalent"
-
-  - platform: custom
-    lambda: |-
-      auto depth_sensor = new I2cSonarSensor();
-      App.register_component(depth_sensor);
-      return {depth_sensor};
-
-    sensors:
-      name: "Depth"
-      id: depth
-      device_class: volume
-      unit_of_measurement: gal
-
-binary_sensor:
-  - platform: gpio
-    id: button_c
-    internal: True
-    pin:
-      inverted: True
-      number: 2
-      mode:
-        input: True
-        pullup: True
-    filters:
-      - delayed_on_off: 100ms
-    on_press:
-      - display.page.show_next: screen
-      - component.update: screen
-
-switch:
-  - platform: gpio
-    id: tft_power
-    internal: True
-    pin:
-      number: GPIO21
-      mode:
-        output: True
-    restore_mode: ALWAYS_ON
+      name: "Temperature"
 
 text_sensor:
   - platform: wifi_info
@@ -102,75 +34,24 @@ text_sensor:
       name: "IP Address"
       id: wifi_ip_address
 
-font:
-  - file: "gfonts://Roboto"
-    id: roboto
-    size: 13
-
-time:
-  - platform: homeassistant
-    id: ha_time
-
-graph:
-  - id: depth_chart
-    sensor: depth
-    duration: 24h
-    width: 120
-    height: 50
+spi:
+  clk_pin: GPIO36
+  mosi_pin: GPIO35
 
 display:
   - platform: st7789v
-    id: screen
-    model: Custom
-    height: 200
-    width: 320
-    offset_height: 0
-    offset_width: 0
+    model: TTGO_TDISPLAY_135X240
     backlight_pin: GPIO45
-    cs_pin: GPIO7
-    dc_pin: GPIO39
-    reset_pin: GPIO40
-    update_interval: 10.0s
-    pages:
-      - id: wifi_page
-        lambda: |-
-          int line_height = 13;
-          int y = 0;
-          float signal = id(wifi_signal_strength).state;
-          if (signal == signal) { // check for !NaN
-            it.printf(0, y, id(roboto), "%s", id(wifi_ip_address).state.c_str());
-            it.printf(0, y += line_height, id(roboto), "Connected: %.0f dBm", signal);
-          }
-          else {
-            it.printf(0, y, id(roboto), "Connecting...");
-            y += line_height;
-          }
-          const char *pch = id(wifi_scan).state.c_str();
-          ESP_LOGD("wifi_page", "wifi_scan: %s", pch);
-          while ((y += line_height) <= 64 - line_height / 2) {
-            const char *pchNext = strchr(pch, '\n');
-            uint len = pchNext == NULL ? strlen(pch) : pchNext - pch;
-            if (pchNext != NULL)
-              ++pchNext;
-            it.printf(0, y, id(roboto), "%.*s", len, pch);
-            if ((pch = pchNext) == NULL || !*pch)
-              break;
-          }
-      - id: depth_page
-        lambda: |-
-          float gal = id(depth).state;
-          if (gal == gal)
-            it.printf(0, 0, id(roboto), "%.1f Gal", gal);
-          it.graph(4, 13, id(depth_chart));
-      - id: env_page
-        lambda: |-
-          auto now = id(ha_time).now();
-          it.strftime(0, 0, id(roboto), "%a, %b %d, %Y", now);
-          it.strftime(0, 13, id(roboto), "%I:%M %p", now);
-          it.printf(0, 26, id(roboto), "%.1f °F", id(temp).state * (9.0 / 5.0) + 32.0);
-          it.printf(64, 26, id(roboto), "%.1f \%RH", id(humid).state);
-          it.printf(0, 39, id(roboto), "%.1f hPa", id(pres).state);
-          it.printf(64, 39, id(roboto), "%.1f IAQ", id(iaq).state);
+    cs_pin: GPIO42
+    dc_pin: GPIO40
+    reset_pin: GPIO41
+    lambda: |-
+      it.print(0, 0, id(roboto), "Hello World!");
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 20
 
 # Enable logging
 logger:
