@@ -4,6 +4,14 @@
   trigger:
   - platform: homeassistant
     event: start
+  - platform: state
+    entity_id:
+    - binary_sensor.generator_power_outage
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
   condition:
   - condition: state
     entity_id: binary_sensor.generator_power_outage
@@ -38,11 +46,11 @@
   condition:
   - condition: state
     entity_id: binary_sensor.generator_power_outage
-    state: 'off'
     for:
       hours: 0
-      minutes: 0
-      seconds: 30
+      minutes: 5
+      seconds: 0
+    state: 'off'
   action:
   - type: turn_on
     device_id: f1eb06a0cd1de63a0a89d6f1a07c0c07
