@@ -18,13 +18,6 @@ i2c:
   scl: 4
   scan: False
   frequency: 100kHz
-
-sensor:
-  - platform: bme680
-    address: 0x77
-    temperature:
-      name: "Temperature"
-
 text_sensor:
   - platform: wifi_info
     scan_results:
@@ -37,6 +30,7 @@ text_sensor:
 spi:
   clk_pin: GPIO36
   mosi_pin: GPIO35
+  miso_pin: GPIO37
 
 display:
   - platform: st7789v
@@ -45,6 +39,7 @@ display:
     cs_pin: GPIO42
     dc_pin: GPIO40
     reset_pin: GPIO41
+    rotation: 90
     lambda: |-
       it.print(0, 0, id(roboto), "Hello World!");
 
