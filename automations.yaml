@@ -27,6 +27,8 @@
   - service: climate.set_aux_heat
     data:
       aux_heat: true
+    target:
+      device_id: f3b75a62f1f4994fe3318e82ef70391a
   - service: notify.notify
     data:
       message: Set the Kitchen thermostat to Aux heat
