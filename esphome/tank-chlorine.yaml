@@ -18,14 +18,11 @@ i2c:
   scl: 4
   scan: False
   frequency: 100kHz
-text_sensor:
-  - platform: wifi_info
-    scan_results:
-      name: "WiFi Scan"
-      id: wifi_scan
-    ip_address:
-      name: "IP Address"
-      id: wifi_ip_address
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    id: wifi_signal_strength
 
 spi:
   clk_pin: GPIO36
