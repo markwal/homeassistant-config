@@ -62,3 +62,39 @@
     data:
       message: 'Auto: turned allow heat pump east back on'
   mode: single
+- id: '1684022238203'
+  alias: Turn off Shop cam when present
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - person.mark_walker
+    to: Shop
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: notify.mobile_app_pixel_6_pro
+    data:
+      message: Somebody entered the Shop zone
+  mode: single
+- id: '1684546297292'
+  alias: Mark left the shop
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - person.mark_walker
+    from: Shop
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: notify.mobile_app_pixel_6_pro
+    data:
+      message: Mark left the shop
+  mode: single

@@ -143,20 +143,16 @@ external_components:
     components: [ ssd1306_base, ssd1306_i2c ]
 
 font:
-  - file: "gfonts://Roboto"
+  - file: "gfonts://Source Sans Pro"
     id: roboto
     size: 13
+  - file: "gfonts://Source Sans Pro"
+    id: source_sans
+    size: 16
 
 time:
   - platform: homeassistant
     id: ha_time
-
-graph:
-  - id: depth_chart
-    sensor: depth
-    duration: 24h
-    width: 120
-    height: 50
 
 display:
   - platform: ssd1306_i2c
@@ -193,8 +189,8 @@ display:
         lambda: |-
           float gal = id(depth).state;
           if (gal == gal)
-            it.printf(0, 0, id(roboto), "%.1f Gal", gal);
-          it.graph(4, 13, id(depth_chart));
+            it.printf(0, 0, id(source_sans), "%.1f Gal", gal);
+
       - id: env_page
         lambda: |-
           auto now = id(ha_time).now();
@@ -202,7 +198,7 @@ display:
           it.strftime(0, 13, id(roboto), "%I:%M %p", now);
           it.printf(0, 26, id(roboto), "%.1f °F", id(temp).state * (9.0 / 5.0) + 32.0);
           it.printf(64, 26, id(roboto), "%.1f \%RH", id(humid).state);
-          it.printf(0, 39, id(roboto), "%.1f hPa", id(pres).state);
+          it.printf(0, 39, id(roboto), "%.1f inHg", id(pres).state / 33.8639);
           it.printf(64, 39, id(roboto), "%.1f IAQ", id(iaq).state);
 
 # Enable logging
