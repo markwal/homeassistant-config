@@ -38,7 +38,7 @@ class I2cSonarSensor : public PollingComponent, public Sensor {
         }
 
         void update() override {
-            int32_t um = sonar.readUm();
+            int32_t um = sonar.readUm(500);
             ESP_LOGD("sonar", "Sonar returned %ld um", um);
             if (um < 1) {
                 ESP_LOGI("sonar", "Sensor returned spurious value < 1. Ignoring.");
