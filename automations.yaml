@@ -6,23 +6,23 @@
     event: start
   - platform: state
     entity_id:
-    - binary_sensor.generator_power_outage
-    to: 'on'
+    - binary_sensor.grid_status
+    to: 'off'
     for:
       hours: 0
       minutes: 0
-      seconds: 30
+      seconds: 10
   condition:
-  - condition: state
-    entity_id: binary_sensor.generator_power_outage
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 30
-    state: 'on'
   - condition: state
     entity_id: climate.kitchen
     state: heat
+  - condition: state
+    entity_id: binary_sensor.grid_status
+    state: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
   action:
   - service: climate.set_aux_heat
     data:
@@ -53,6 +53,14 @@
       minutes: 5
       seconds: 0
     state: 'off'
+    enabled: false
+  - condition: state
+    entity_id: binary_sensor.grid_status
+    state: 'on'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   action:
   - type: turn_on
     device_id: f1eb06a0cd1de63a0a89d6f1a07c0c07
@@ -63,7 +71,7 @@
       message: 'Auto: turned allow heat pump east back on'
   mode: single
 - id: '1684022238203'
-  alias: Turn off Shop cam when present
+  alias: Mark is in the shop
   description: ''
   trigger:
   - platform: state
@@ -72,13 +80,24 @@
     to: Shop
     for:
       hours: 0
-      minutes: 5
+      minutes: 1
       seconds: 0
-  condition: []
+  condition:
+  - condition: state
+    entity_id: person.mark_walker
+    state: Shop
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
   action:
   - service: notify.mobile_app_pixel_6_pro
     data:
       message: Somebody entered the Shop zone
+  - type: turn_off
+    device_id: acb27efef4a773ababb34a2d84d03a26
+    entity_id: switch.wv_shop_power
+    domain: switch
   mode: single
 - id: '1684546297292'
   alias: Mark left the shop
@@ -90,11 +109,15 @@
     from: Shop
     for:
       hours: 0
-      minutes: 5
+      minutes: 1
       seconds: 0
   condition: []
   action:
   - service: notify.mobile_app_pixel_6_pro
     data:
       message: Mark left the shop
+  - type: turn_on
+    device_id: acb27efef4a773ababb34a2d84d03a26
+    entity_id: switch.wv_shop_power
+    domain: switch
   mode: single
