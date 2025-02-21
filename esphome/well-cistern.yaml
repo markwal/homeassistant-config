@@ -62,17 +62,8 @@ sensor:
     breath_voc_equivalent:
       name: "BME680 Breath VOC Equivalent"
 
-  - platform: custom
-    lambda: |-
-      auto depth_sensor = new I2cSonarSensor();
-      App.register_component(depth_sensor);
-      return {depth_sensor};
-
-    sensors:
-      name: "Depth"
-      id: depth
-      device_class: volume
-      unit_of_measurement: gal
+  - platform: i2csonar
+    name: "Depth"
 
 binary_sensor:
   - platform: gpio
@@ -137,6 +128,9 @@ text_sensor:
     ip_address:
       name: "IP Address"
       id: wifi_ip_address
+
+external_components:
+  - source: components
 
 font:
   - file: "gfonts://Source Sans Pro"
