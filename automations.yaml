@@ -91,13 +91,13 @@
       minutes: 1
       seconds: 0
   action:
-  - service: notify.mobile_app_pixel_6_pro
-    data:
-      message: Somebody entered the Shop zone
   - type: turn_off
     device_id: acb27efef4a773ababb34a2d84d03a26
     entity_id: switch.wv_shop_power
     domain: switch
+  - service: notify.mobile_app_pixel_9_pro_xl
+    data:
+      message: Mark is in the shop
   mode: single
 - id: '1684546297292'
   alias: Mark left the shop
@@ -113,11 +113,11 @@
       seconds: 0
   condition: []
   action:
-  - service: notify.mobile_app_pixel_6_pro
-    data:
-      message: Mark left the shop
   - type: turn_on
     device_id: acb27efef4a773ababb34a2d84d03a26
     entity_id: switch.wv_shop_power
     domain: switch
+  - service: notify.mobile_app_pixel_9_pro_xl
+    data:
+      message: Mark left the shop
   mode: single

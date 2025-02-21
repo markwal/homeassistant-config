@@ -206,7 +206,8 @@ api:
     key: !secret well_cistern
 
 ota:
-  password: !secret well_cistern_ota
+  - platform: esphome
+    password: !secret well_cistern_ota
 
 wifi:
   ssid: !secret wifi_ssid
