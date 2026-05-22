@@ -1,0 +1,6 @@
+secrets.yaml
+.storage/
+*.db*
+*.log*
+*.token
+.ssh/
