@@ -1,0 +1,59 @@
+esphome:
+  name: outdoor-thermometer
+
+esp32:
+  board: adafruit_feather_esp32_v2
+  framework:
+    type: esp-idf
+    advanced:
+      minimum_chip_revision: 3.0
+
+# turn on the i2c bus
+switch:
+  - platform: gpio
+    id: stemma_power
+    pin: GPIO2
+    restore_mode: ALWAYS_ON
+    setup_priority: 1000
+
+# we want i2c setup to be *after* the i2c bus is on so that scan works
+i2c:
+  sda: GPIO22
+  scl: GPIO20
+  scan: true
+  id: bus_a
+  frequency: 50khz
+  setup_priority: 999
+
+sensor:
+  - platform: sht3xd
+    temperature:
+      name: "Outdoor Temperature"
+    humidity:
+      name: "Outdoor Humidity"
+    i2c_id: bus_a
+    address: 0x44
+    heater_enabled: False
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "5AaO2lqV/039QBGbvL5C+pt95mzrKGxyF+4OE1N1v7I="
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Outdoor-Thermostat"
+    password: !secret wifi_ap_password
+
+captive_portal:

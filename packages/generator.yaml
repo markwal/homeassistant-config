@@ -176,10 +176,9 @@ mqtt:
       # value is something like "4/12/2024"
 
     - unique_id: "ebee5d0d-103d-4f35-b7ef-cd88d3f3e0e7"
-      expire_after: 300
       name: Generator Ambient Temperature
       icon: mdi:thermometer
-      state_topic: 'generator/Maintenance/Ambient Temperature Sensor'
+      state_topic: 'generator/Maintenance/Ambient Temperature Sensor/value'
 
     # genmon monitor related sensors
     - unique_id: "9bc1d83a-34bc-4a1e-a643-3c0eb62501dd"
