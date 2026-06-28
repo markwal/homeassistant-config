@@ -1,11 +1,6 @@
 esphome:
   name: "well-cistern"
   friendly_name: Well Cistern
-  includes:
-    - i2c_sonar.h
-  libraries:
-    - Wire
-    - https://github.com/markwal/RCWL_1601_i2c.git
   on_boot:
     priority: 300
     then:
@@ -17,14 +12,15 @@ esphome:
 esp32:
   board: adafruit_feather_esp32_v2
   framework:
-    type: arduino
+    type: esp-idf
 
 i2c:
   sda: 22
   scl: 20
   id: bus_a
 
-bme680_bsec:
+bme68x_bsec2_i2c:
+  model: bme680
   address: 0x77
   sample_rate: ulp
 
@@ -44,7 +40,7 @@ sensor:
     name: "WiFi Signal Sensor"
     id: wifi_signal_strength
 
-  - platform: bme680_bsec
+  - platform: bme68x_bsec2
     temperature:
       name: "BME680 Temperature"
       id: temp
@@ -62,8 +58,17 @@ sensor:
     breath_voc_equivalent:
       name: "BME680 Breath VOC Equivalent"
 
-  - platform: i2csonar
+  - platform: i2c_sonar
     name: "Depth"
+    id: depth
+    sda_pin: 33
+    scl_pin: 27
+    address: 0x57
+    update_interval: 15s
+    device_class: volume
+    state_class: measurement
+    unit_of_measurement: gal
+    accuracy_decimals: 0
 
 binary_sensor:
   - platform: gpio
@@ -130,7 +135,10 @@ text_sensor:
       id: wifi_ip_address
 
 external_components:
-  - source: components
+  - source:
+      type: local
+      path: components
+    components: [i2c_sonar]
 
 font:
   - file: "gfonts://Source Sans Pro"
