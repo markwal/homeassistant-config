@@ -4,7 +4,7 @@
 #include "esphome/components/sensor/sensor.h"
 
 #ifdef USE_ESP32
-#include <driver/i2c_master.h>
+#include <driver/gpio.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
@@ -39,6 +39,16 @@ class I2CSonarSensor : public sensor::Sensor, public Component {
   void task_loop_();
   bool setup_bus_();
   void reset_bus_();
+  void recover_bus_();
+  void set_sda_(bool high);
+  void set_scl_(bool high);
+  bool read_sda_();
+  bool read_scl_();
+  bool wait_scl_high_(uint32_t timeout_us);
+  bool start_condition_();
+  bool stop_condition_();
+  bool write_byte_(uint8_t byte);
+  bool read_byte_(uint8_t *byte, bool ack);
   bool write_command_(uint8_t command);
   bool read_distance_um_(uint32_t *distance_um);
   void publish_from_task_(float gallons);
@@ -55,9 +65,6 @@ class I2CSonarSensor : public sensor::Sensor, public Component {
   float gallons_per_cm_{5.6555f};
 
 #ifdef USE_ESP32
-  i2c_port_num_t port_{I2C_NUM_1};
-  i2c_master_bus_handle_t bus_handle_{nullptr};
-  i2c_master_dev_handle_t device_handle_{nullptr};
   TaskHandle_t task_handle_{nullptr};
   SemaphoreHandle_t state_mutex_{nullptr};
   bool bus_ready_{false};

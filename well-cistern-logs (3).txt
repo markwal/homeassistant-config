@@ -1,0 +1,224 @@
+[21:08:21]ets Jul 29 2019 12:21:46
+[21:08:21]
+[21:08:21]rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+[21:08:21]configsip: 271414342, SPIWP:0xee
+[21:08:21]clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+[21:08:21]mode:DIO, clock div:1
+[21:08:21]load:0x3fff0030,len:6248
+[21:08:21]load:0x40078000,len:16144
+[21:08:21]load:0x40080400,len:3920
+[21:08:21]entry 0x40080638
+[21:08:21]I (28) boot: ESP-IDF 5.5.4 2nd stage bootloader
+[21:08:21]I (28) boot: Multicore bootloader
+[21:08:21]I (28) boot: chip revision: v3.0
+[21:08:21]I (28) boot.esp32: SPI Speed      : 80MHz
+[21:08:21]I (32) boot.esp32: SPI Mode       : DIO
+[21:08:21]I (35) boot.esp32: SPI Flash Size : 4MB
+[21:08:21]I (39) boot: Enabling RNG early entropy source...
+[21:08:21]I (43) boot: Partition Table:
+[21:08:21]I (46) boot: ## Label            Usage          Type ST Offset   Length
+[21:08:21]I (52) boot:  0 otadata          OTA data         01 00 00009000 00002000
+[21:08:21]I (59) boot:  1 phy_init         RF data          01 01 0000b000 00001000
+[21:08:21]I (65) boot:  2 app0             OTA app          00 10 00010000 001c0000
+[21:08:21]I (72) boot:  3 app1             OTA app          00 11 001d0000 001c0000
+[21:08:21]I (78) boot:  4 nvs              WiFi data        01 02 00390000 00070000
+[21:08:21]I (85) boot: End of partition table
+[21:08:21]I (88) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=28b60h (166752) map
+[21:08:21]I (144) esp_image: segment 1: paddr=00038b88 vaddr=3ffb0000 size=03f50h ( 16208) load
+[21:08:21]I (150) esp_image: segment 2: paddr=0003cae0 vaddr=40080000 size=03538h ( 13624) load
+[21:08:21]I (155) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=b8268h (754280) map
+[21:08:21]I (376) esp_image: segment 4: paddr=000f8290 vaddr=40083538 size=1011ch ( 65820) load
+[21:08:21]I (399) esp_image: segment 5: paddr=001083b4 vaddr=50000000 size=00020h (    32) load
+[21:08:21]I (409) boot: Loaded app from partition at offset 0x10000
+[21:08:21]I (409) boot: Disabling RNG early entropy source...
+[21:08:22][I][logger:122]: Log initialized
+[21:08:22][C][safe_mode:189]: Unsuccessful boot attempts: 1
+[21:08:22][D][preferences:148]: Writing 1 items: 0 cached, 1 written, 0 failed
+[21:08:22][I][app:060]: Running through setup()
+[21:08:22][I][i2c.idf:205]: Performing bus recovery
+[21:08:22][D][template.switch:044]:   Restored state ON
+[21:08:22][C][i2c_sonar.sensor:014]: Running setup
+[21:08:22][C][component:237]: Setup display took 262ms
+[21:08:22][D][script:099]: Script 'auto_display_off' restarting (mode: restart)
+[21:08:22][C][wifi:645]: Starting
+[21:08:22][D][wifi:1303]: Starting scan
+[21:08:22][C][component:237]: Setup wifi took 74ms
+[21:08:22][W][component:382]: api set Warning flag: waiting for client connection
+[21:08:22][I][app:117]: setup() finished successfully!
+[21:08:22][D][esp-idf:000][i2c_sonar]: E (84) i2c.master: I2C hardware timeout detected
+[21:08:22][W][i2c_sonar.sensor:094][i2c_sonar]: Failed to start sonar measurement
+[21:08:22][W][component:382]: wifi set Warning flag: scanning for networks
+[21:08:22][I][app:151]: ESPHome version 2026.6.2 compiled on 2026-06-28 21:04:24 -0700
+[21:08:22][I][app:158]: ESP32 Chip: ESP32 rev3.0, 2 core(s)
+[21:08:22][W][app:171]: Chip rev >= 3.0 detected. Set minimum_chip_revision: "3.0" under esp32 > framework > advanced to reduce binary size
+[21:08:22][W][app:198]: Bootloader supports SRAM1 as IRAM (+40KB). Set sram1_as_iram: true under esp32 > framework > advanced
+[21:08:22][C][logger:223]: Logger:
+[21:08:22][C][logger:223]:   Max Level: DEBUG
+[21:08:22][C][logger:223]:   Initial Level: DEBUG
+[21:08:22][C][logger:230]:   Log Baud Rate: 115200
+[21:08:22][C][logger:230]:   Hardware UART: UART0
+[21:08:22][C][logger:239]:   Task Log Buffer Size: 768 bytes
+[21:08:22][C][i2c.idf:092]: I2C Bus:
+[21:08:22][C][i2c.idf:093]:   SDA Pin: GPIO22
+[21:08:22][C][i2c.idf:093]:   SCL Pin: GPIO20
+[21:08:22][C][i2c.idf:093]:   Frequency: 50000 Hz
+[21:08:22][C][i2c.idf:103]:   Recovery: bus successfully recovered
+[21:08:22][C][i2c.idf:113]: Results from bus scan:
+[21:08:22][C][i2c.idf:119]: Found device at address 0x3C
+[21:08:22][C][i2c.idf:119]: Found device at address 0x77
+[21:08:22][C][gpio.binary_sensor:016]: GPIO Binary Sensor 'button_a'
+[21:08:22][C][gpio.binary_sensor:152]:   Pin: GPIO15
+[21:08:22][C][gpio.binary_sensor:061]:   Mode: interrupt
+[21:08:22][C][gpio.binary_sensor:063]:   Interrupt Type: ANY_EDGE
+[21:08:22][C][gpio.binary_sensor:016]: GPIO Binary Sensor 'button_c'
+[21:08:22][C][gpio.binary_sensor:152]:   Pin: GPIO14
+[21:08:22][C][gpio.binary_sensor:061]:   Mode: interrupt
+[21:08:22][C][gpio.binary_sensor:063]:   Interrupt Type: ANY_EDGE
+[21:08:22][C][template.switch:088]: Template Switch 'display_on'
+[21:08:22][C][template.switch:088]:   Restore Mode: always ON
+[21:08:22][C][template.switch:055]:   Optimistic: YES
+[21:08:22][C][bme68x_bsec2_i2c.sensor:029]:   Address: 0x77
+[21:08:22][C][bme68x_bsec2.sensor:066]: BME68X via BSEC2:
+[21:08:22][C][bme68x_bsec2.sensor:066]:   BSEC2 version: 2.6.1.0
+[21:08:22][C][bme68x_bsec2.sensor:066]:   BSEC2 configuration blob:
+[21:08:22][C][bme68x_bsec2.sensor:066]:     Configured: YES
+[21:08:22][C][bme68x_bsec2.sensor:074]:     Size: 1943
+[21:08:22][C][bme68x_bsec2.sensor:088]:   Operating age: 28 days
+[21:08:22][C][bme68x_bsec2.sensor:088]:   Sample rate: ULP
+[21:08:22][C][bme68x_bsec2.sensor:088]:   Voltage: 3.3V
+[21:08:22][C][bme68x_bsec2.sensor:088]:   State save interval: 21600000ms
+[21:08:22][C][bme68x_bsec2.sensor:088]:   Temperature offset: 0.00
+[21:08:22][C][bme68x_bsec2.sensor:017]:   Temperature 'BME680 Temperature'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     State Class: 'measurement'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Unit of Measurement: '°C'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Accuracy Decimals: 1
+[21:08:22][C][bme68x_bsec2.sensor:232]:     Device Class: 'temperature'
+[21:08:22][C][bme68x_bsec2.sensor:223]:     Icon: 'mdi:thermometer'
+[21:08:22][C][bme68x_bsec2.sensor:099]:     Sample rate: Default
+[21:08:22][C][bme68x_bsec2.sensor:017]:   Pressure 'BME680 Pressure'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     State Class: 'measurement'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Unit of Measurement: 'hPa'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Accuracy Decimals: 1
+[21:08:22][C][bme68x_bsec2.sensor:232]:     Device Class: 'atmospheric_pressure'
+[21:08:22][C][bme68x_bsec2.sensor:101]:     Sample rate: Default
+[21:08:22][C][bme68x_bsec2.sensor:017]:   Humidity 'BME680 Humidity'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     State Class: 'measurement'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Unit of Measurement: '%'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Accuracy Decimals: 1
+[21:08:22][C][bme68x_bsec2.sensor:232]:     Device Class: 'humidity'
+[21:08:22][C][bme68x_bsec2.sensor:223]:     Icon: 'mdi:water-percent'
+[21:08:22][C][bme68x_bsec2.sensor:103]:     Sample rate: Default
+[21:08:22][C][bme68x_bsec2.sensor:017]:   CO2 equivalent 'BME680 CO2 Equivalent'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     State Class: 'measurement'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Unit of Measurement: 'ppm'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Accuracy Decimals: 1
+[21:08:22][C][bme68x_bsec2.sensor:232]:     Device Class: 'carbon_dioxide'
+[21:08:22][C][bme68x_bsec2.sensor:017]:   Breath VOC equivalent 'BME680 Breath VOC Equivalent'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     State Class: 'measurement'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Unit of Measurement: 'ppm'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Accuracy Decimals: 1
+[21:08:22][C][bme68x_bsec2.sensor:232]:     Device Class: 'volatile_organic_compounds_parts'
+[21:08:22][C][bme68x_bsec2.sensor:017]:   IAQ 'BME680 IAQ'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     State Class: 'measurement'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Unit of Measurement: 'IAQ'
+[21:08:22][C][bme68x_bsec2.sensor:017]:     Accuracy Decimals: 0
+[21:08:22][C][bme68x_bsec2.sensor:223]:     Icon: 'mdi:gauge'
+[21:08:22][C][i2c_sonar.sensor:017]: I2C Sonar 'Depth'
+[21:08:22][C][i2c_sonar.sensor:017]:   State Class: 'measurement'
+[21:08:22][C][i2c_sonar.sensor:017]:   Unit of Measurement: 'gal'
+[21:08:22][C][i2c_sonar.sensor:017]:   Accuracy Decimals: 0
+[21:08:22][C][i2c_sonar.sensor:232]:   Device Class: 'volume'
+[21:08:22][C][i2c_sonar.sensor:049]:   SDA Pin: GPIO33
+[21:08:22][C][i2c_sonar.sensor:049]:   SCL Pin: GPIO27
+[21:08:22][C][i2c_sonar.sensor:049]:   Address: 0x57
+[21:08:22][C][i2c_sonar.sensor:049]:   Update Interval: 15000 ms
+[21:08:22][C][i2c_sonar.sensor:049]:   Measurement Delay: 500 ms
+[21:08:22][C][i2c_sonar.sensor:049]:   Response Timeout: 100 ms
+[21:08:22][C][i2c_sonar.sensor:049]:   Transaction Timeout: 50 ms
+[21:08:22][C][i2c_sonar.sensor:049]:   Tank Height: 183.0 cm
+[21:08:22][C][i2c_sonar.sensor:049]:   Scale: 5.6555 gal/cm
+[21:08:22][C][wifi_info:016]: IP Address 'IP Address'
+[21:08:22][C][homeassistant.time:009]: Home Assistant Time
+[21:08:22][C][time:049]: Timezone: UTC-8:00 (DST UTC-7:00)
+[21:08:22][C][time:055]: Current time: 1969-12-31 16:00:00
+[21:08:22][C][ssd1306_i2c:021]: I2C SSD1306
+[21:08:22][C][ssd1306_i2c:021]:   Rotations: 90 °
+[21:08:22][C][ssd1306_i2c:021]:   Dimensions: 128px x 64px
+[21:08:22][C][ssd1306_i2c:022]:   Model: SH1107 128x64
+[21:08:22][C][ssd1306_i2c:022]:   External VCC: YES
+[21:08:22][C][ssd1306_i2c:022]:   Flip X: NO
+[21:08:22][C][ssd1306_i2c:022]:   Flip Y: NO
+[21:08:22][C][ssd1306_i2c:022]:   Offset X: 0
+[21:08:22][C][ssd1306_i2c:022]:   Offset Y: 96
+[21:08:22][C][ssd1306_i2c:022]:   Inverted Color: NO
+[21:08:22][C][ssd1306_i2c:032]:   Address: 0x3C
+[21:08:22][C][ssd1306_i2c:434]:   Update Interval: 10.0s
+[21:08:22][C][captive_portal:133]: Captive Portal:
+[21:08:22][C][wifi:1531]: WiFi:
+[21:08:22][C][wifi:1531]:   Local MAC: E8:9F:6D:21:5A:48
+[21:08:22][C][wifi:1531]:   Connected: NO
+[21:08:22][C][esphome.ota:097]: Over-The-Air updates:
+[21:08:22][C][esphome.ota:097]:   Address: well-cistern.local:3232
+[21:08:22][C][esphome.ota:097]:   Version: 2
+[21:08:22][C][esphome.ota:104]:   Password configured
+[21:08:22][C][safe_mode:058]: Safe Mode:
+[21:08:22][C][safe_mode:058]:   Successful after: 60s
+[21:08:22][C][safe_mode:058]:   Invoke after: 10 attempts
+[21:08:22][C][safe_mode:058]:   Duration: 300s
+[21:08:22][C][safe_mode:079]:   Bootloader rollback: support unknown
+[21:08:22][C][web_server.ota:256]: Web Server OTA
+[21:08:22][C][api:243]: Server:
+[21:08:22][C][api:243]:   Address: well-cistern.local:6053
+[21:08:22][C][api:243]:   Listen backlog: 4
+[21:08:22][C][api:243]:   Max connections: 5
+[21:08:23][C][api:250]:   Noise encryption: YES
+[21:08:23][C][wifi_signal.sensor:017]: WiFi Signal 'WiFi Signal Sensor'
+[21:08:23][C][wifi_signal.sensor:017]:   State Class: 'measurement'
+[21:08:23][C][wifi_signal.sensor:017]:   Unit of Measurement: 'dBm'
+[21:08:23][C][wifi_signal.sensor:017]:   Accuracy Decimals: 0
+[21:08:23][C][wifi_signal.sensor:232]:   Device Class: 'signal_strength'
+[21:08:23][C][wifi_info:016]: Scan Results 'WiFi Scan'
+[21:08:23][C][mdns:230]: mDNS:
+[21:08:23][C][mdns:230]:   Hostname: well-cistern
+[21:08:23][D][wifi_page:176]: wifi_scan: 
+[21:08:24][W][component:513]: display took a long time for an operation (246 ms), max is 50 ms
+[21:08:24][D][wifi:1463]: Found networks:
+[21:08:24][I][wifi:1434]: - 'OrbitCityCentral' (AC:8B:A9:2A:F7:4B) ▂▄▆█ Ch: 6 -45dB P:0
+[21:08:24][D][wifi:1857]: Retry phase: INITIAL_CONNECT → SCAN_CONNECTING
+[21:08:24][I][wifi:1097]: Connecting to 'OrbitCityCentral' (AC:8B:A9:2A:F7:4B) (priority 0, attempt 1/2 in phase SCAN_CONNECTING)...
+[21:08:25][W][bme68x_bsec2.sensor:376]: Signal processing failed (BSEC2 error code -2)
+[21:08:25][E][component:389]: bme68x_bsec2 set Error flag: unspecified
+[21:08:26][I][wifi:1575]: Connected
+[21:08:26][D][wifi:1592]: Disabling AP
+[21:08:26][C][wifi:1237]:   IP Address: 192.168.107.198
+[21:08:26][C][wifi:1248]:   SSID: 'OrbitCityCentral'
+[21:08:26][C][wifi:1248]:   BSSID: AC:8B:A9:2A:F7:4B
+[21:08:26][C][wifi:1248]:   Hostname: 'well-cistern'
+[21:08:26][C][wifi:1248]:   Signal strength: -45 dB ▂▄▆█
+[21:08:26][C][wifi:1248]:   Channel: 6
+[21:08:26][C][wifi:1248]:   Subnet: 255.255.255.0
+[21:08:26][C][wifi:1248]:   Gateway: 192.168.107.1
+[21:08:26][C][wifi:1248]:   DNS1: 192.168.107.1
+[21:08:26][C][wifi:1248]:   DNS2: 0.0.0.0
+[21:08:26][W][component:405]: wifi cleared Warning flag
+[21:08:33][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB
+[21:08:37][D][esp-idf:000][i2c_sonar]: E (15086) i2c.master: I2C hardware timeout detected
+[21:08:37][W][i2c_sonar.sensor:094][i2c_sonar]: Failed to start sonar measurement
+[21:08:43][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB
+[21:08:52][D][esp-idf:000][i2c_sonar]: E (30087) i2c.master: I2C hardware timeout detected
+[21:08:52][W][i2c_sonar.sensor:094][i2c_sonar]: Failed to start sonar measurement
+[21:08:52][W][i2c_sonar.sensor:099][i2c_sonar]: Resetting dedicated sonar I2C bus after repeated failures
+[21:08:53][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB
+[21:09:03][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB
+[21:09:07][W][i2c_sonar.sensor:094][i2c_sonar]: Failed to start sonar measurement
+[21:09:13][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB
+[21:09:22][I][safe_mode:142]: Boot seems successful; resetting boot loop counter
+[21:09:22][D][esp-idf:000][i2c_sonar]: E (60094) i2c.master: I2C hardware timeout detected
+[21:09:22][W][i2c_sonar.sensor:094][i2c_sonar]: Failed to start sonar measurement
+[21:09:22][D][preferences:148]: Writing 1 items: 0 cached, 1 written, 0 failed
+[21:09:23][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB
+[21:09:33][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB
+[21:09:37][D][esp-idf:000][i2c_sonar]: E (75095) i2c.master: I2C hardware timeout detected
+[21:09:37][W][i2c_sonar.sensor:094][i2c_sonar]: Failed to start sonar measurement
+[21:09:37][W][i2c_sonar.sensor:099][i2c_sonar]: Resetting dedicated sonar I2C bus after repeated failures
+[21:09:43][D][wifi_page:176]: wifi_scan: OrbitCityCentral: -45dB

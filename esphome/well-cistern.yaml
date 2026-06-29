@@ -65,6 +65,7 @@ sensor:
     scl_pin: 27
     address: 0x57
     update_interval: 15s
+    transaction_timeout: 75ms
     device_class: volume
     state_class: measurement
     unit_of_measurement: gal

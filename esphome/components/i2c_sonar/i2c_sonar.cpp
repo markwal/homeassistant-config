@@ -3,12 +3,13 @@
 
 #ifdef USE_ESP32
 #include <cmath>
+#include "esphome/core/hal.h"
 
 namespace esphome {
 namespace i2c_sonar {
 
 static const char *const TAG = "i2c_sonar.sensor";
-static const uint32_t I2C_FREQUENCY = 50000;
+static const uint32_t BIT_DELAY_US = 10;
 
 void I2CSonarSensor::setup() {
   ESP_LOGCONFIG(TAG, "Running setup");
@@ -69,6 +70,7 @@ void I2CSonarSensor::task_entry_(void *param) {
 
 void I2CSonarSensor::task_loop_() {
   uint8_t consecutive_failures = 0;
+  vTaskDelay(pdMS_TO_TICKS(5000));
 
   for (;;) {
     if (!this->bus_ready_ && !this->setup_bus_()) {
@@ -106,81 +108,206 @@ void I2CSonarSensor::task_loop_() {
 }
 
 bool I2CSonarSensor::setup_bus_() {
-  i2c_master_bus_config_t bus_config{};
-  bus_config.i2c_port = this->port_;
-  bus_config.sda_io_num = static_cast<gpio_num_t>(this->sda_pin_);
-  bus_config.scl_io_num = static_cast<gpio_num_t>(this->scl_pin_);
-  bus_config.clk_source = I2C_CLK_SRC_DEFAULT;
-  bus_config.glitch_ignore_cnt = 7;
-  bus_config.flags.enable_internal_pullup = true;
-
-  esp_err_t err = i2c_new_master_bus(&bus_config, &this->bus_handle_);
-  if (err == ESP_ERR_INVALID_STATE) {
-    this->reset_bus_();
-    err = i2c_new_master_bus(&bus_config, &this->bus_handle_);
-  }
-  if (err != ESP_OK) {
-    ESP_LOGW(TAG, "i2c_new_master_bus failed: %s", esp_err_to_name(err));
-    return false;
-  }
-
-  i2c_device_config_t device_config{};
-  device_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
-  device_config.device_address = this->address_;
-  device_config.scl_speed_hz = I2C_FREQUENCY;
-
-  err = i2c_master_bus_add_device(this->bus_handle_, &device_config, &this->device_handle_);
-  if (err != ESP_OK) {
-    ESP_LOGW(TAG, "i2c_master_bus_add_device failed: %s", esp_err_to_name(err));
-    this->reset_bus_();
-    return false;
-  }
-
+  this->recover_bus_();
   this->bus_ready_ = true;
   return true;
 }
 
 void I2CSonarSensor::reset_bus_() {
-  if (this->device_handle_ != nullptr) {
-    i2c_master_bus_rm_device(this->device_handle_);
-    this->device_handle_ = nullptr;
-  }
-  if (this->bus_handle_ != nullptr) {
-    i2c_del_master_bus(this->bus_handle_);
-    this->bus_handle_ = nullptr;
-  }
   this->bus_ready_ = false;
+  this->recover_bus_();
 }
 
-bool I2CSonarSensor::write_command_(uint8_t command) {
-  if (this->device_handle_ == nullptr)
-    return false;
+void I2CSonarSensor::recover_bus_() {
+  const gpio_num_t sda_pin = static_cast<gpio_num_t>(this->sda_pin_);
+  const gpio_num_t scl_pin = static_cast<gpio_num_t>(this->scl_pin_);
 
-  esp_err_t err = i2c_master_transmit(this->device_handle_, &command, 1, this->transaction_timeout_ms_);
-  if (err != ESP_OK) {
-    ESP_LOGV(TAG, "Write command failed: %s", esp_err_to_name(err));
-    return false;
+  gpio_set_level(sda_pin, 1);
+  gpio_set_level(scl_pin, 1);
+
+  gpio_config_t scl_config{};
+  scl_config.pin_bit_mask = 1ULL << this->scl_pin_;
+  scl_config.mode = GPIO_MODE_INPUT_OUTPUT_OD;
+  scl_config.pull_up_en = GPIO_PULLUP_ENABLE;
+  scl_config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  scl_config.intr_type = GPIO_INTR_DISABLE;
+  gpio_config(&scl_config);
+
+  gpio_config_t sda_config{};
+  sda_config.pin_bit_mask = 1ULL << this->sda_pin_;
+  sda_config.mode = GPIO_MODE_INPUT_OUTPUT_OD;
+  sda_config.pull_up_en = GPIO_PULLUP_ENABLE;
+  sda_config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  sda_config.intr_type = GPIO_INTR_DISABLE;
+  gpio_config(&sda_config);
+
+  delayMicroseconds(10);
+  ESP_LOGD(TAG, "Recovering sonar bus: SDA=%d SCL=%d", gpio_get_level(sda_pin), gpio_get_level(scl_pin));
+
+  for (uint8_t i = 0; i < 9; i++) {
+    this->set_scl_(false);
+    delayMicroseconds(10);
+    this->set_scl_(true);
+    delayMicroseconds(10);
+  }
+
+  this->set_sda_(false);
+  delayMicroseconds(10);
+  this->set_scl_(true);
+  delayMicroseconds(10);
+  this->set_sda_(true);
+  delayMicroseconds(10);
+
+  ESP_LOGD(TAG, "Recovered sonar bus: SDA=%d SCL=%d", gpio_get_level(sda_pin), gpio_get_level(scl_pin));
+}
+
+void I2CSonarSensor::set_sda_(bool high) {
+  gpio_set_level(static_cast<gpio_num_t>(this->sda_pin_), high ? 1 : 0);
+}
+
+void I2CSonarSensor::set_scl_(bool high) {
+  gpio_set_level(static_cast<gpio_num_t>(this->scl_pin_), high ? 1 : 0);
+}
+
+bool I2CSonarSensor::read_sda_() {
+  return gpio_get_level(static_cast<gpio_num_t>(this->sda_pin_)) != 0;
+}
+
+bool I2CSonarSensor::read_scl_() {
+  return gpio_get_level(static_cast<gpio_num_t>(this->scl_pin_)) != 0;
+}
+
+bool I2CSonarSensor::wait_scl_high_(uint32_t timeout_us) {
+  uint32_t waited = 0;
+  while (!this->read_scl_()) {
+    if (waited >= timeout_us)
+      return false;
+    delayMicroseconds(10);
+    waited += 10;
   }
   return true;
 }
 
-bool I2CSonarSensor::read_distance_um_(uint32_t *distance_um) {
-  if (this->device_handle_ == nullptr)
+bool I2CSonarSensor::start_condition_() {
+  this->set_sda_(true);
+  this->set_scl_(true);
+  if (!this->wait_scl_high_(this->transaction_timeout_ms_ * 1000)) {
+    ESP_LOGV(TAG, "Start failed: SCL held low");
     return false;
+  }
+  delayMicroseconds(BIT_DELAY_US);
+  if (!this->read_sda_()) {
+    ESP_LOGV(TAG, "Start failed: SDA held low");
+    return false;
+  }
+  this->set_sda_(false);
+  delayMicroseconds(BIT_DELAY_US);
+  this->set_scl_(false);
+  delayMicroseconds(BIT_DELAY_US);
+  return true;
+}
+
+bool I2CSonarSensor::stop_condition_() {
+  this->set_sda_(false);
+  delayMicroseconds(BIT_DELAY_US);
+  this->set_scl_(true);
+  if (!this->wait_scl_high_(this->transaction_timeout_ms_ * 1000)) {
+    ESP_LOGV(TAG, "Stop failed: SCL held low");
+    return false;
+  }
+  delayMicroseconds(BIT_DELAY_US);
+  this->set_sda_(true);
+  delayMicroseconds(BIT_DELAY_US);
+  return true;
+}
+
+bool I2CSonarSensor::write_byte_(uint8_t byte) {
+  for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
+    this->set_sda_((byte & mask) != 0);
+    delayMicroseconds(BIT_DELAY_US);
+    this->set_scl_(true);
+    if (!this->wait_scl_high_(this->transaction_timeout_ms_ * 1000)) {
+      ESP_LOGV(TAG, "Write failed: SCL held low");
+      return false;
+    }
+    delayMicroseconds(BIT_DELAY_US);
+    this->set_scl_(false);
+    delayMicroseconds(BIT_DELAY_US);
+  }
+
+  this->set_sda_(true);
+  delayMicroseconds(BIT_DELAY_US);
+  this->set_scl_(true);
+  if (!this->wait_scl_high_(this->transaction_timeout_ms_ * 1000)) {
+    ESP_LOGV(TAG, "ACK failed: SCL held low");
+    return false;
+  }
+  delayMicroseconds(BIT_DELAY_US);
+  bool ack = !this->read_sda_();
+  this->set_scl_(false);
+  delayMicroseconds(BIT_DELAY_US);
+
+  if (!ack)
+    ESP_LOGV(TAG, "Write byte 0x%02X not acknowledged", byte);
+  return ack;
+}
+
+bool I2CSonarSensor::read_byte_(uint8_t *byte, bool ack) {
+  uint8_t value = 0;
+  this->set_sda_(true);
+
+  for (uint8_t i = 0; i < 8; i++) {
+    value <<= 1;
+    this->set_scl_(true);
+    if (!this->wait_scl_high_(this->transaction_timeout_ms_ * 1000)) {
+      ESP_LOGV(TAG, "Read failed: SCL held low");
+      return false;
+    }
+    delayMicroseconds(BIT_DELAY_US);
+    if (this->read_sda_())
+      value |= 1;
+    this->set_scl_(false);
+    delayMicroseconds(BIT_DELAY_US);
+  }
+
+  this->set_sda_(!ack);
+  delayMicroseconds(BIT_DELAY_US);
+  this->set_scl_(true);
+  if (!this->wait_scl_high_(this->transaction_timeout_ms_ * 1000))
+    return false;
+  delayMicroseconds(BIT_DELAY_US);
+  this->set_scl_(false);
+  this->set_sda_(true);
+  delayMicroseconds(BIT_DELAY_US);
+
+  *byte = value;
+  return true;
+}
+
+bool I2CSonarSensor::write_command_(uint8_t command) {
+  bool ok = this->start_condition_() && this->write_byte_((this->address_ << 1) | 0) && this->write_byte_(command);
+  this->stop_condition_();
+  return ok;
+}
+
+bool I2CSonarSensor::read_distance_um_(uint32_t *distance_um) {
+  uint8_t bytes[3] = {0, 0, 0};
 
   const TickType_t start = xTaskGetTickCount();
   const TickType_t deadline = start + pdMS_TO_TICKS(this->response_timeout_ms_);
-  uint8_t bytes[3] = {0, 0, 0};
 
   while (xTaskGetTickCount() <= deadline) {
-    esp_err_t err = i2c_master_receive(this->device_handle_, bytes, sizeof(bytes), this->transaction_timeout_ms_);
-    if (err == ESP_OK) {
+    if (this->start_condition_() && this->write_byte_((this->address_ << 1) | 1) &&
+        this->read_byte_(&bytes[0], true) && this->read_byte_(&bytes[1], true) &&
+        this->read_byte_(&bytes[2], false)) {
+      this->stop_condition_();
       *distance_um = (static_cast<uint32_t>(bytes[0]) << 16) | (static_cast<uint32_t>(bytes[1]) << 8) |
                      static_cast<uint32_t>(bytes[2]);
       return true;
     }
 
-    ESP_LOGV(TAG, "Read attempt failed: %s", esp_err_to_name(err));
+    this->stop_condition_();
+    ESP_LOGV(TAG, "Read attempt failed");
     vTaskDelay(pdMS_TO_TICKS(10));
   }
 
