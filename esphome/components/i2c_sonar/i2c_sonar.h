@@ -4,7 +4,7 @@
 #include "esphome/components/sensor/sensor.h"
 
 #ifdef USE_ESP32
-#include <driver/i2c.h>
+#include <driver/i2c_master.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
@@ -55,7 +55,9 @@ class I2CSonarSensor : public sensor::Sensor, public Component {
   float gallons_per_cm_{5.6555f};
 
 #ifdef USE_ESP32
-  i2c_port_t port_{I2C_NUM_1};
+  i2c_port_num_t port_{I2C_NUM_1};
+  i2c_master_bus_handle_t bus_handle_{nullptr};
+  i2c_master_dev_handle_t device_handle_{nullptr};
   TaskHandle_t task_handle_{nullptr};
   SemaphoreHandle_t state_mutex_{nullptr};
   bool bus_ready_{false};

@@ -3,7 +3,6 @@
 
 #ifdef USE_ESP32
 #include <cmath>
-#include <cstring>
 
 namespace esphome {
 namespace i2c_sonar {
@@ -107,28 +106,33 @@ void I2CSonarSensor::task_loop_() {
 }
 
 bool I2CSonarSensor::setup_bus_() {
-  i2c_config_t conf{};
-  memset(&conf, 0, sizeof(conf));
-  conf.mode = I2C_MODE_MASTER;
-  conf.sda_io_num = static_cast<gpio_num_t>(this->sda_pin_);
-  conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-  conf.scl_io_num = static_cast<gpio_num_t>(this->scl_pin_);
-  conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-  conf.master.clk_speed = I2C_FREQUENCY;
+  i2c_master_bus_config_t bus_config{};
+  bus_config.i2c_port = this->port_;
+  bus_config.sda_io_num = static_cast<gpio_num_t>(this->sda_pin_);
+  bus_config.scl_io_num = static_cast<gpio_num_t>(this->scl_pin_);
+  bus_config.clk_source = I2C_CLK_SRC_DEFAULT;
+  bus_config.glitch_ignore_cnt = 7;
+  bus_config.flags.enable_internal_pullup = true;
 
-  esp_err_t err = i2c_param_config(this->port_, &conf);
+  esp_err_t err = i2c_new_master_bus(&bus_config, &this->bus_handle_);
+  if (err == ESP_ERR_INVALID_STATE) {
+    this->reset_bus_();
+    err = i2c_new_master_bus(&bus_config, &this->bus_handle_);
+  }
   if (err != ESP_OK) {
-    ESP_LOGW(TAG, "i2c_param_config failed: %s", esp_err_to_name(err));
+    ESP_LOGW(TAG, "i2c_new_master_bus failed: %s", esp_err_to_name(err));
     return false;
   }
 
-  err = i2c_driver_install(this->port_, I2C_MODE_MASTER, 0, 0, 0);
-  if (err == ESP_ERR_INVALID_STATE) {
-    i2c_driver_delete(this->port_);
-    err = i2c_driver_install(this->port_, I2C_MODE_MASTER, 0, 0, 0);
-  }
+  i2c_device_config_t device_config{};
+  device_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+  device_config.device_address = this->address_;
+  device_config.scl_speed_hz = I2C_FREQUENCY;
+
+  err = i2c_master_bus_add_device(this->bus_handle_, &device_config, &this->device_handle_);
   if (err != ESP_OK) {
-    ESP_LOGW(TAG, "i2c_driver_install failed: %s", esp_err_to_name(err));
+    ESP_LOGW(TAG, "i2c_master_bus_add_device failed: %s", esp_err_to_name(err));
+    this->reset_bus_();
     return false;
   }
 
@@ -137,20 +141,22 @@ bool I2CSonarSensor::setup_bus_() {
 }
 
 void I2CSonarSensor::reset_bus_() {
-  if (this->bus_ready_)
-    i2c_driver_delete(this->port_);
+  if (this->device_handle_ != nullptr) {
+    i2c_master_bus_rm_device(this->device_handle_);
+    this->device_handle_ = nullptr;
+  }
+  if (this->bus_handle_ != nullptr) {
+    i2c_del_master_bus(this->bus_handle_);
+    this->bus_handle_ = nullptr;
+  }
   this->bus_ready_ = false;
 }
 
 bool I2CSonarSensor::write_command_(uint8_t command) {
-  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-  i2c_master_start(cmd);
-  i2c_master_write_byte(cmd, (this->address_ << 1) | I2C_MASTER_WRITE, true);
-  i2c_master_write_byte(cmd, command, true);
-  i2c_master_stop(cmd);
+  if (this->device_handle_ == nullptr)
+    return false;
 
-  esp_err_t err = i2c_master_cmd_begin(this->port_, cmd, pdMS_TO_TICKS(this->transaction_timeout_ms_));
-  i2c_cmd_link_delete(cmd);
+  esp_err_t err = i2c_master_transmit(this->device_handle_, &command, 1, this->transaction_timeout_ms_);
   if (err != ESP_OK) {
     ESP_LOGV(TAG, "Write command failed: %s", esp_err_to_name(err));
     return false;
@@ -159,19 +165,15 @@ bool I2CSonarSensor::write_command_(uint8_t command) {
 }
 
 bool I2CSonarSensor::read_distance_um_(uint32_t *distance_um) {
+  if (this->device_handle_ == nullptr)
+    return false;
+
   const TickType_t start = xTaskGetTickCount();
   const TickType_t deadline = start + pdMS_TO_TICKS(this->response_timeout_ms_);
   uint8_t bytes[3] = {0, 0, 0};
 
   while (xTaskGetTickCount() <= deadline) {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (this->address_ << 1) | I2C_MASTER_READ, true);
-    i2c_master_read(cmd, bytes, sizeof(bytes), I2C_MASTER_LAST_NACK);
-    i2c_master_stop(cmd);
-
-    esp_err_t err = i2c_master_cmd_begin(this->port_, cmd, pdMS_TO_TICKS(this->transaction_timeout_ms_));
-    i2c_cmd_link_delete(cmd);
+    esp_err_t err = i2c_master_receive(this->device_handle_, bytes, sizeof(bytes), this->transaction_timeout_ms_);
     if (err == ESP_OK) {
       *distance_um = (static_cast<uint32_t>(bytes[0]) << 16) | (static_cast<uint32_t>(bytes[1]) << 8) |
                      static_cast<uint32_t>(bytes[2]);
