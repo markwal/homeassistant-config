@@ -1,7 +1,6 @@
 #include "i2c_sonar.h"
 #include "esphome/core/log.h"
 
-#ifdef USE_ESP32
 #include <cmath>
 #include "esphome/core/hal.h"
 
@@ -20,10 +19,31 @@ void I2CSonarSensor::setup() {
     return;
   }
 
+  const TickType_t timer_period = pdMS_TO_TICKS(this->update_interval_ms_);
+  this->timer_handle_ =
+      xTimerCreate("i2c_sonar", timer_period > 0 ? timer_period : 1, pdTRUE, this, &I2CSonarSensor::timer_callback_);
+  if (this->timer_handle_ == nullptr) {
+    ESP_LOGE(TAG, "Failed to create sonar polling timer");
+    this->mark_failed();
+    return;
+  }
+
   BaseType_t created = xTaskCreatePinnedToCore(
       &I2CSonarSensor::task_entry_, "i2c_sonar", 4096, this, 1, &this->task_handle_, 1);
   if (created != pdPASS) {
     ESP_LOGE(TAG, "Failed to create sonar polling task");
+    xTimerDelete(this->timer_handle_, 0);
+    this->timer_handle_ = nullptr;
+    this->mark_failed();
+    return;
+  }
+
+  if (xTimerStart(this->timer_handle_, 0) != pdPASS) {
+    ESP_LOGE(TAG, "Failed to start sonar polling timer");
+    vTaskDelete(this->task_handle_);
+    this->task_handle_ = nullptr;
+    xTimerDelete(this->timer_handle_, 0);
+    this->timer_handle_ = nullptr;
     this->mark_failed();
   }
 }
@@ -68,42 +88,49 @@ void I2CSonarSensor::task_entry_(void *param) {
   static_cast<I2CSonarSensor *>(param)->task_loop_();
 }
 
+void I2CSonarSensor::timer_callback_(TimerHandle_t timer) {
+  auto *sensor = static_cast<I2CSonarSensor *>(pvTimerGetTimerID(timer));
+  if (sensor != nullptr && sensor->task_handle_ != nullptr)
+    xTaskNotifyGive(sensor->task_handle_);
+}
+
 void I2CSonarSensor::task_loop_() {
-  uint8_t consecutive_failures = 0;
-  vTaskDelay(pdMS_TO_TICKS(5000));
-
   for (;;) {
-    if (!this->bus_ready_ && !this->setup_bus_()) {
-      consecutive_failures++;
-      vTaskDelay(pdMS_TO_TICKS(this->update_interval_ms_));
-      continue;
-    }
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    this->poll_once_();
+  }
+}
 
-    uint32_t distance_um = 0;
-    if (this->write_command_(1)) {
-      vTaskDelay(pdMS_TO_TICKS(this->measurement_delay_ms_));
-      if (this->read_distance_um_(&distance_um) && distance_um > 0) {
-        const float depth_cm = this->tank_height_cm_ - (static_cast<float>(distance_um) / 10000.0f);
-        const float gallons = floorf(depth_cm * this->gallons_per_cm_);
-        ESP_LOGD(TAG, "Sonar returned %" PRIu32 " um, publishing %.0f gal", distance_um, gallons);
-        this->publish_from_task_(gallons);
-        consecutive_failures = 0;
-      } else {
-        ESP_LOGW(TAG, "Sonar read failed or returned an invalid distance");
-        consecutive_failures++;
-      }
+void I2CSonarSensor::poll_once_() {
+  if (!this->bus_ready_ && !this->setup_bus_()) {
+    this->consecutive_failures_++;
+    return;
+  }
+
+  uint32_t distance_um = 0;
+  if (this->write_command_(1)) {
+    vTaskDelay(pdMS_TO_TICKS(this->measurement_delay_ms_));
+    if (this->read_distance_um_(&distance_um) && distance_um > 0) {
+      float depth_cm = this->tank_height_cm_ - (static_cast<float>(distance_um) / 10000.0f);
+      if (depth_cm < 0.0f)
+        depth_cm = 0.0f;
+      const float gallons = floorf(depth_cm * this->gallons_per_cm_);
+      ESP_LOGD(TAG, "Sonar returned %" PRIu32 " um, publishing %.0f gal", distance_um, gallons);
+      this->publish_from_task_(gallons);
+      this->consecutive_failures_ = 0;
     } else {
-      ESP_LOGW(TAG, "Failed to start sonar measurement");
-      consecutive_failures++;
+      ESP_LOGW(TAG, "Sonar read failed or returned an invalid distance");
+      this->consecutive_failures_++;
     }
+  } else {
+    ESP_LOGW(TAG, "Failed to start sonar measurement");
+    this->consecutive_failures_++;
+  }
 
-    if (consecutive_failures >= 3) {
-      ESP_LOGW(TAG, "Resetting dedicated sonar I2C bus after repeated failures");
-      this->reset_bus_();
-      consecutive_failures = 0;
-    }
-
-    vTaskDelay(pdMS_TO_TICKS(this->update_interval_ms_));
+  if (this->consecutive_failures_ >= 3) {
+    ESP_LOGW(TAG, "Resetting dedicated sonar I2C bus after repeated failures");
+    this->reset_bus_();
+    this->consecutive_failures_ = 0;
   }
 }
 
@@ -327,5 +354,3 @@ void I2CSonarSensor::publish_from_task_(float gallons) {
 
 }  // namespace i2c_sonar
 }  // namespace esphome
-
-#endif  // USE_ESP32

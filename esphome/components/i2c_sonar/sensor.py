@@ -22,25 +22,31 @@ I2CSonarSensor = i2c_sonar_ns.class_(
     "I2CSonarSensor", sensor.Sensor, cg.Component
 )
 
-CONFIG_SCHEMA = sensor.sensor_schema(
-    I2CSonarSensor,
-    unit_of_measurement="gal",
-    accuracy_decimals=0,
-    device_class=DEVICE_CLASS_VOLUME,
-    state_class=STATE_CLASS_MEASUREMENT,
-).extend(
-    {
-        cv.Required(CONF_SDA_PIN): pins.internal_gpio_pin_number,
-        cv.Required(CONF_SCL_PIN): pins.internal_gpio_pin_number,
-        cv.Optional(CONF_ADDRESS, default=0x57): cv.i2c_address,
-        cv.Optional(CONF_UPDATE_INTERVAL, default="15s"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_MEASUREMENT_DELAY, default="500ms"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_TIMEOUT, default="100ms"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_TRANSACTION_TIMEOUT, default="50ms"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_TANK_HEIGHT, default=183.0): cv.positive_float,
-        cv.Optional(CONF_GALLONS_PER_CM, default=5.6555): cv.positive_float,
-    }
-).extend(cv.COMPONENT_SCHEMA)
+CONFIG_SCHEMA = cv.All(
+    sensor.sensor_schema(
+        I2CSonarSensor,
+        unit_of_measurement="gal",
+        accuracy_decimals=0,
+        device_class=DEVICE_CLASS_VOLUME,
+        state_class=STATE_CLASS_MEASUREMENT,
+    )
+    .extend(
+        {
+            cv.Required(CONF_SDA_PIN): pins.internal_gpio_pin_number,
+            cv.Required(CONF_SCL_PIN): pins.internal_gpio_pin_number,
+            cv.Optional(CONF_ADDRESS, default=0x57): cv.i2c_address,
+            cv.Optional(CONF_UPDATE_INTERVAL, default="10s"): cv.positive_time_period_milliseconds,
+            cv.Optional(CONF_MEASUREMENT_DELAY, default="500ms"): cv.positive_time_period_milliseconds,
+            cv.Optional(CONF_TIMEOUT, default="100ms"): cv.positive_time_period_milliseconds,
+            cv.Optional(CONF_TRANSACTION_TIMEOUT, default="50ms"): cv.positive_time_period_milliseconds,
+            cv.Optional(CONF_TANK_HEIGHT, default=183.0): cv.positive_float,
+            cv.Optional(CONF_GALLONS_PER_CM, default=5.6555): cv.positive_float,
+        }
+    )
+    .extend(cv.COMPONENT_SCHEMA),
+    cv.only_on_esp32,
+    cv.only_with_esp_idf,
+)
 
 
 async def to_code(config):

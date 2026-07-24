@@ -3,12 +3,11 @@
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
 
-#ifdef USE_ESP32
 #include <driver/gpio.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
-#endif
+#include <freertos/timers.h>
 
 #include <cstdint>
 
@@ -34,9 +33,10 @@ class I2CSonarSensor : public sensor::Sensor, public Component {
   void set_gallons_per_cm(float gallons_per_cm) { this->gallons_per_cm_ = gallons_per_cm; }
 
  protected:
-#ifdef USE_ESP32
   static void task_entry_(void *param);
+  static void timer_callback_(TimerHandle_t timer);
   void task_loop_();
+  void poll_once_();
   bool setup_bus_();
   void reset_bus_();
   void recover_bus_();
@@ -52,25 +52,24 @@ class I2CSonarSensor : public sensor::Sensor, public Component {
   bool write_command_(uint8_t command);
   bool read_distance_um_(uint32_t *distance_um);
   void publish_from_task_(float gallons);
-#endif
 
   uint8_t sda_pin_{33};
   uint8_t scl_pin_{27};
   uint8_t address_{0x57};
-  uint32_t update_interval_ms_{15000};
+  uint32_t update_interval_ms_{10000};
   uint32_t measurement_delay_ms_{500};
   uint32_t response_timeout_ms_{100};
   uint32_t transaction_timeout_ms_{50};
   float tank_height_cm_{183.0f};
   float gallons_per_cm_{5.6555f};
 
-#ifdef USE_ESP32
   TaskHandle_t task_handle_{nullptr};
+  TimerHandle_t timer_handle_{nullptr};
   SemaphoreHandle_t state_mutex_{nullptr};
+  uint8_t consecutive_failures_{0};
   bool bus_ready_{false};
   bool pending_state_{false};
   float pending_gallons_{0.0f};
-#endif
 };
 
 }  // namespace i2c_sonar

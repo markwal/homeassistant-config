@@ -64,7 +64,7 @@ sensor:
     sda_pin: 33
     scl_pin: 27
     address: 0x57
-    update_interval: 15s
+    update_interval: 10s
     transaction_timeout: 75ms
     device_class: volume
     state_class: measurement
