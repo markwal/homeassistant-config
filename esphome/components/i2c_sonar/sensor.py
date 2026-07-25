@@ -16,6 +16,7 @@ I2CSonarSensor = i2c_sonar_ns.class_(
     "I2CSonarSensor", sensor.Sensor, cg.Component, i2c.I2CDevice
 )
 
+
 CONFIG_SCHEMA = cv.All(
     sensor.sensor_schema(
         I2CSonarSensor,
@@ -35,7 +36,6 @@ CONFIG_SCHEMA = cv.All(
     .extend(i2c.i2c_device_schema(0x57))
     .extend(cv.COMPONENT_SCHEMA),
     cv.only_on_esp32,
-    cv.only_with_esp_idf,
 )
 
 
