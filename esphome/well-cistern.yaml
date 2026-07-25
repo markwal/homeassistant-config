@@ -18,10 +18,12 @@ i2c:
   - sda: 22
     scl: 20
     id: bus_a
+    setup_priority: 999
   - sda: 33
     scl: 27
     id: sonar_bus
     scan: false
+    setup_priority: 999
 
 bme68x_bsec2_i2c:
   model: bme680
@@ -116,6 +118,13 @@ binary_sensor:
       - component.update: sh1107
 
 switch:
+  - platform: gpio
+    id: stemma_power
+    internal: True
+    pin: GPIO2
+    restore_mode: ALWAYS_ON
+    setup_priority: 1000
+
   - platform: template
     id: display_on
     internal: True
