@@ -15,12 +15,17 @@ esp32:
     type: esp-idf
 
 i2c:
-  sda: 22
-  scl: 20
-  id: bus_a
+  - sda: 22
+    scl: 20
+    id: bus_a
+  - sda: 33
+    scl: 27
+    id: sonar_bus
+    scan: false
 
 bme68x_bsec2_i2c:
   model: bme680
+  i2c_id: bus_a
   address: 0x77
   sample_rate: ulp
 
@@ -61,11 +66,9 @@ sensor:
   - platform: i2c_sonar
     name: "Depth"
     id: depth
-    sda_pin: 33
-    scl_pin: 27
+    i2c_id: sonar_bus
     address: 0x57
     update_interval: 10s
-    transaction_timeout: 75ms
     device_class: volume
     state_class: measurement
     unit_of_measurement: gal
@@ -157,6 +160,7 @@ display:
   - platform: ssd1306_i2c
     model: 'SH1107_128x64'
     id: sh1107
+    i2c_id: bus_a
     rotation: 90
     flip_x: False
     flip_y: False
