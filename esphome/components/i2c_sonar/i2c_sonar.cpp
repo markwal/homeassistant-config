@@ -1,8 +1,6 @@
 #include "i2c_sonar.h"
 #include "esphome/core/log.h"
 
-#include <cmath>
-
 namespace esphome {
 namespace i2c_sonar {
 
@@ -55,16 +53,16 @@ void I2CSonarSensor::loop() {
     return;
 
   bool should_publish = false;
-  float gallons = NAN;
+  float distance_cm = 0.0f;
   if (xSemaphoreTake(this->state_mutex_, 0) == pdTRUE) {
     should_publish = this->pending_state_;
-    gallons = this->pending_gallons_;
+    distance_cm = this->pending_distance_cm_;
     this->pending_state_ = false;
     xSemaphoreGive(this->state_mutex_);
   }
 
   if (should_publish)
-    this->publish_state(gallons);
+    this->publish_state(distance_cm);
 }
 
 void I2CSonarSensor::dump_config() {
@@ -72,11 +70,8 @@ void I2CSonarSensor::dump_config() {
   LOG_I2C_DEVICE(this);
   ESP_LOGCONFIG(TAG,
                 "  Update Interval: %" PRIu32 " ms\n"
-                "  Response Timeout: %" PRIu32 " ms\n"
-                "  Tank Height: %.1f cm\n"
-                "  Scale: %.4f gal/cm",
-                this->update_interval_ms_, this->response_timeout_ms_, this->tank_height_cm_,
-                this->gallons_per_cm_);
+                "  Response Timeout: %" PRIu32 " ms",
+                this->update_interval_ms_, this->response_timeout_ms_);
 }
 
 float I2CSonarSensor::get_setup_priority() const { return setup_priority::DATA; }
@@ -103,12 +98,9 @@ void I2CSonarSensor::poll_once_() {
   bool success = false;
 
   if (this->read_distance_um_(&distance_um) && distance_um > 0) {
-    float depth_cm = this->tank_height_cm_ - (static_cast<float>(distance_um) / 10000.0f);
-    if (depth_cm < 0.0f)
-      depth_cm = 0.0f;
-    const float gallons = floorf(depth_cm * this->gallons_per_cm_);
-    ESP_LOGD(TAG, "Sonar returned %" PRIu32 " um, publishing %.0f gal", distance_um, gallons);
-    this->publish_from_task_(gallons);
+    const float distance_cm = static_cast<float>(distance_um) / 10000.0f;
+    ESP_LOGD(TAG, "Sonar returned %" PRIu32 " um, publishing %.1f cm", distance_um, distance_cm);
+    this->publish_from_task_(distance_cm);
     success = true;
   } else {
     ESP_LOGW(TAG, "Sonar read failed or returned an invalid distance");
@@ -151,12 +143,12 @@ bool I2CSonarSensor::read_distance_um_(uint32_t *distance_um) {
   return false;
 }
 
-void I2CSonarSensor::publish_from_task_(float gallons) {
+void I2CSonarSensor::publish_from_task_(float distance_cm) {
   if (this->state_mutex_ == nullptr)
     return;
 
   if (xSemaphoreTake(this->state_mutex_, pdMS_TO_TICKS(20)) == pdTRUE) {
-    this->pending_gallons_ = gallons;
+    this->pending_distance_cm_ = distance_cm;
     this->pending_state_ = true;
     xSemaphoreGive(this->state_mutex_);
   }

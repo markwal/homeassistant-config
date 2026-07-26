@@ -75,6 +75,10 @@ sensor:
     state_class: measurement
     unit_of_measurement: gal
     accuracy_decimals: 0
+    # Convert sonar distance to volume: 183.0 cm is the tank height and
+    # 5.6555 gal/cm is the tank's volume per centimeter of water depth.
+    filters:
+      - lambda: return floorf(std::max(0.0f, 183.0f - x) * 5.6555f);
 
 binary_sensor:
   - platform: gpio
